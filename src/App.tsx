@@ -115,10 +115,10 @@ export default function App() {
     }
   };
 
-  const updateTempItem = (
+  const updateTempItem = <K extends keyof TransactionItem>(
     index: number,
-    field: keyof TransactionItem,
-    value: any,
+    field: K,
+    value: TransactionItem[K],
   ) => {
     const newItems = [...tempItems];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -176,7 +176,7 @@ export default function App() {
           newQty = item.quantity;
         }
         newHistoryEntries.push({
-          id: Math.random().toString(36).substr(2, 9),
+          id: crypto.randomUUID(),
           date: new Date().toISOString(),
           type: "compra",
           productName: item.name,
@@ -192,7 +192,7 @@ export default function App() {
           );
           newQty = updatedInventory[existingIndex].quantity;
           newHistoryEntries.push({
-            id: Math.random().toString(36).substr(2, 9),
+            id: crypto.randomUUID(),
             date: new Date().toISOString(),
             type: "salida",
             productName: item.name,
@@ -223,7 +223,7 @@ export default function App() {
       setInventory(updatedInventory);
 
       const newEntry: HistoryEntry = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         date: new Date().toISOString(),
         type: "ajuste",
         productName: adjustProduct.name,
@@ -241,7 +241,7 @@ export default function App() {
     const productToDelete = inventory.find((p) => p.id === id);
     if (productToDelete) {
       const newEntry: HistoryEntry = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         date: new Date().toISOString(),
         type: "eliminacion",
         productName: productToDelete.name,
@@ -264,7 +264,7 @@ export default function App() {
       setInventory([...inventory, newProduct]);
 
       const newEntry: HistoryEntry = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         date: new Date().toISOString(),
         type: "creacion",
         productName: newProductName,
@@ -621,13 +621,13 @@ export default function App() {
               </div>
             )}
 
-            {tempItems.map((item, idx) => (
+            {tempItems.map((item, index) => (
               <div
-                key={idx}
+                key={item.id}
                 className="bg-natural-card p-6 rounded-[32px] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-natural-border relative"
               >
                 <button
-                  onClick={() => removeTempItem(idx)}
+                  onClick={() => removeTempItem(index)}
                   className="absolute -top-3 -right-3 bg-natural-clay text-white p-2 rounded-full shadow-md hover:bg-[#c5917b] transition-colors"
                 >
                   <X size={16} />
@@ -641,7 +641,7 @@ export default function App() {
                     type="text"
                     value={item.name}
                     onChange={(e) =>
-                      updateTempItem(idx, "name", e.target.value)
+                      updateTempItem(index, "name", e.target.value)
                     }
                     placeholder="Nombre del producto"
                     className="w-full text-xl font-semibold text-natural-text border-b border-natural-border focus:border-natural-green py-2 outline-none transition-colors bg-transparent mt-1"
@@ -654,7 +654,7 @@ export default function App() {
                   </label>
                   <div className="flex items-center space-x-4 bg-natural-sand rounded-[24px] p-1.5">
                     <button
-                      onClick={() => updateTempQty(idx, -1)}
+                      onClick={() => updateTempQty(index, -1)}
                       className="p-3 bg-natural-card rounded-[20px] shadow-sm text-natural-text hover:text-natural-green-dark active:scale-95 transition-all"
                     >
                       <Minus size={20} />
@@ -663,7 +663,7 @@ export default function App() {
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => updateTempQty(idx, 1)}
+                      onClick={() => updateTempQty(index, 1)}
                       className="p-3 bg-natural-card rounded-[20px] shadow-sm text-natural-text hover:text-natural-green-dark active:scale-95 transition-all"
                     >
                       <Plus size={20} />
@@ -798,10 +798,11 @@ export default function App() {
 
             <button
               onClick={confirmAdjust}
-              disabled={
-                !adjustReason.trim() &&
-                adjustQuantity !== adjustProduct.quantity
-              }
+              disabled={Boolean(
+                (adjustQuantity !== adjustProduct.quantity &&
+                  !adjustReason.trim()) ||
+                adjustQuantity === adjustProduct.quantity,
+              )}
               className="w-full bg-natural-green disabled:bg-natural-sand disabled:text-natural-text-light disabled:cursor-not-allowed hover:bg-natural-green-dark text-white py-5 rounded-[32px] font-serif text-xl shadow-[0_10px_30px_rgba(136,158,129,0.2)] flex items-center justify-center transition-all"
             >
               <Check size={24} className="mr-2" />
