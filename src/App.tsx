@@ -82,37 +82,42 @@ export default function App() {
   };
 
   const handlePhotoTaken = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFlowStep("processing");
-      setTimeout(() => {
-        if (activeFlow === "compra") {
-          setTempItems([
-            {
-              id: "2",
-              name: "Leche Deslactosada 1L",
-              quantity: 6,
-              unit: "litros",
-            },
-            {
-              id: `new-${Date.now()}`,
-              name: "Galletas Marías",
-              quantity: 4,
-              unit: "paquetes",
-            },
-          ]);
-        } else {
-          setTempItems([
-            {
-              id: "1",
-              name: "Pañales Adulto Talla G",
-              quantity: 2,
-              unit: "paquetes",
-            },
-          ]);
-        }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFlowStep("processing");
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      try {
+        const res = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64 }),
+        });
+
+        if (!res.ok) throw new Error("Error en el servidor");
+
+        const data = (await res.json()) as {
+          productos: { nombre: string; cantidad: number; unidad: string }[];
+        };
+
+        setTempItems(
+          data.productos.map((p, i) => ({
+            id: `scan-${Date.now()}-${i}`,
+            name: p.nombre,
+            quantity: p.cantidad,
+            unit: p.unidad,
+          })),
+        );
         setFlowStep("review");
-      }, 2000);
-    }
+      } catch {
+        alert("No se pudo procesar la imagen. Intenta de nuevo.");
+        setFlowStep("camera");
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateTempItem = <K extends keyof TransactionItem>(
@@ -293,7 +298,7 @@ export default function App() {
 
       <button
         onClick={() => startFlow("compra")}
-        className="w-full bg-natural-green text-white p-8 rounded-[32px] shadow-[0_10px_30px_rgba(136,158,129,0.2)] border border-black/5 flex flex-col items-center justify-center space-y-4 transition-transform active:scale-95"
+        className="w-full bg-natural-green text-white p-8 rounded-[32px] shadow-[0_10px_30px_rgba(136,158,129,0.2)] border border-white/10 flex flex-col items-center justify-center space-y-4 transition-transform active:scale-95"
       >
         <div className="w-[70px] h-[70px] bg-white/20 rounded-full flex items-center justify-center">
           <Camera size={32} />
@@ -308,7 +313,7 @@ export default function App() {
 
       <button
         onClick={() => startFlow("salida")}
-        className="w-full bg-natural-green text-white p-8 rounded-[32px] shadow-[0_10px_30px_rgba(136,158,129,0.2)] border border-black/5 flex flex-col items-center justify-center space-y-4 transition-transform active:scale-95"
+        className="w-full bg-natural-green text-white p-8 rounded-[32px] shadow-[0_10px_30px_rgba(136,158,129,0.2)] border border-white/10 flex flex-col items-center justify-center space-y-4 transition-transform active:scale-95"
       >
         <div className="w-[70px] h-[70px] bg-white/20 rounded-full flex items-center justify-center">
           <PackageMinus size={32} />
@@ -559,7 +564,7 @@ export default function App() {
               </p>
             </div>
 
-            <label className="w-64 h-64 bg-natural-sand text-natural-green-dark rounded-full flex flex-col items-center justify-center shadow-[0_10px_30px_rgba(136,158,129,0.15)] cursor-pointer hover:bg-[#e2dcd0] transition-colors border-4 border-white">
+            <label className="w-64 h-64 bg-natural-sand text-natural-green-dark rounded-full flex flex-col items-center justify-center shadow-[0_10px_30px_rgba(136,158,129,0.15)] cursor-pointer hover:bg-natural-sand/80 transition-colors border-4 border-natural-border">
               <Camera size={64} className="mb-4 opacity-80" />
               <span className="font-serif font-bold text-2xl">
                 Abrir Cámara
@@ -628,7 +633,7 @@ export default function App() {
               >
                 <button
                   onClick={() => removeTempItem(index)}
-                  className="absolute -top-3 -right-3 bg-natural-clay text-white p-2 rounded-full shadow-md hover:bg-[#c5917b] transition-colors"
+                  className="absolute -top-3 -right-3 bg-natural-clay text-white p-2 rounded-full shadow-md hover:bg-natural-clay/80 transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -740,7 +745,7 @@ export default function App() {
       )}
 
       {adjustProduct && (
-        <div className="fixed inset-0 bg-natural-text/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
           <div className="bg-natural-card rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_40px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in duration-200 border border-natural-border">
             <div className="flex justify-between items-start mb-8">
               <div>
@@ -820,7 +825,7 @@ export default function App() {
       )}
 
       {isAdding && (
-        <div className="fixed inset-0 bg-natural-text/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50">
           <div className="bg-natural-card rounded-[32px] p-8 w-full max-w-sm shadow-[0_20px_40px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in duration-200 border border-natural-border">
             <div className="flex justify-between items-start mb-8">
               <div>
