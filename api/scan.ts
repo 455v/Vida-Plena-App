@@ -25,6 +25,8 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Se requiere el campo "image" en Base64.' });
   }
 
+  console.log('KEY presente:', !!process.env.GEMINI_API_KEY);
+
   if (!process.env.GEMINI_API_KEY) {
     return res.status(500).json({ error: 'GEMINI_API_KEY no está configurada en el servidor.' });
   }
