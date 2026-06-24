@@ -133,8 +133,9 @@ export default function App() {
   const updateTempQty = (index: number, delta: number) => {
     const newItems = [...tempItems];
     const currentQty = newItems[index].quantity;
-    if (currentQty + delta >= 1) {
-      newItems[index].quantity = currentQty + delta;
+    const next = currentQty + delta;
+    if (next >= 0) {
+      newItems[index].quantity = next;
       setTempItems(newItems);
     }
   };
@@ -155,7 +156,7 @@ export default function App() {
     const newHistoryEntries: HistoryEntry[] = [];
 
     tempItems.forEach((item) => {
-      if (!item.name.trim()) return;
+      if (!item.name.trim() || item.quantity <= 0) return;
       const existingIndex = updatedInventory.findIndex(
         (p) =>
           p.id === item.id || p.name.toLowerCase() === item.name.toLowerCase(),
@@ -653,6 +654,12 @@ export default function App() {
                   />
                 </div>
 
+                {item.quantity === 0 && (
+                  <p className="text-xs text-natural-clay font-bold flex items-center mb-4">
+                    <AlertCircle size={14} className="mr-1" /> Cantidad inválida — corrige antes de confirmar
+                  </p>
+                )}
+
                 <div className="flex items-center justify-between">
                   <label className="text-sm text-natural-text-light font-bold uppercase tracking-widest">
                     Cantidad
@@ -689,7 +696,8 @@ export default function App() {
           <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-natural-bg via-natural-bg to-transparent max-w-md mx-auto">
             <button
               onClick={confirmTransaction}
-              className="w-full bg-natural-green hover:bg-natural-green-dark text-white py-5 rounded-[32px] font-serif text-xl shadow-[0_10px_30px_rgba(136,158,129,0.3)] flex items-center justify-center transition-transform active:scale-95"
+              disabled={tempItems.some((i) => i.name.trim() && i.quantity <= 0)}
+              className="w-full bg-natural-green disabled:bg-natural-sand disabled:text-natural-text-light disabled:cursor-not-allowed hover:bg-natural-green-dark text-white py-5 rounded-[32px] font-serif text-xl shadow-[0_10px_30px_rgba(136,158,129,0.3)] flex items-center justify-center transition-transform active:scale-95"
             >
               <Check size={24} className="mr-2" />
               Confirmar {isCompra ? "Compra" : "Salida"}
@@ -866,9 +874,10 @@ export default function App() {
                   type="number"
                   value={newProductQuantity}
                   onChange={(e) =>
-                    setNewProductQuantity(parseInt(e.target.value) || 0)
+                    setNewProductQuantity(parseInt(e.target.value) || 1)
                   }
-                  placeholder="0"
+                  min={1}
+                  placeholder="1"
                   className="w-full p-4 bg-natural-bg border border-natural-border rounded-[20px] focus:bg-natural-card focus:border-natural-green focus:ring-1 focus:ring-natural-green outline-none transition-all text-sm font-semibold text-center"
                 />
               </div>
@@ -888,7 +897,7 @@ export default function App() {
 
             <button
               onClick={confirmAdd}
-              disabled={!newProductName.trim()}
+              disabled={!newProductName.trim() || newProductQuantity < 1}
               className="w-full bg-natural-green disabled:bg-natural-sand disabled:text-natural-text-light disabled:cursor-not-allowed hover:bg-natural-green-dark text-white py-5 rounded-[32px] font-serif text-xl shadow-[0_10px_30px_rgba(136,158,129,0.2)] flex items-center justify-center transition-all"
             >
               <Check size={24} className="mr-2" />
