@@ -209,7 +209,7 @@ export default function App() {
       }
     });
 
-    setInventory(updatedInventory);
+    setInventory(updatedInventory.filter((p) => p.quantity > 0));
     setHistory([...newHistoryEntries, ...history]);
     cancelFlow();
     setCurrentTab("inventory");
