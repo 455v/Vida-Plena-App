@@ -671,9 +671,16 @@ export default function App() {
                     >
                       <Minus size={20} />
                     </button>
-                    <span className="font-serif font-bold text-2xl w-10 text-center text-natural-green-dark">
-                      {item.quantity}
-                    </span>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        updateTempItem(index, "quantity", isNaN(val) || val < 0 ? 0 : val);
+                      }}
+                      min={0}
+                      className="font-serif font-bold text-2xl w-14 text-center text-natural-green-dark bg-transparent outline-none border-b border-natural-border focus:border-natural-green transition-colors"
+                    />
                     <button
                       onClick={() => updateTempQty(index, 1)}
                       className="p-3 bg-natural-card rounded-[20px] shadow-sm text-natural-text hover:text-natural-green-dark active:scale-95 transition-all"
@@ -681,6 +688,19 @@ export default function App() {
                       <Plus size={20} />
                     </button>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-4">
+                  <label className="text-sm text-natural-text-light font-bold uppercase tracking-widest">
+                    Unidad
+                  </label>
+                  <input
+                    type="text"
+                    value={item.unit}
+                    onChange={(e) => updateTempItem(index, "unit", e.target.value)}
+                    placeholder="Ej. cajas"
+                    className="text-right text-natural-text font-semibold bg-transparent border-b border-natural-border focus:border-natural-green outline-none py-1 w-32 transition-colors"
+                  />
                 </div>
               </div>
             ))}
