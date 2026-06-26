@@ -672,14 +672,15 @@ export default function App() {
                       <Minus size={20} />
                     </button>
                     <input
-                      type="number"
-                      value={item.quantity}
+                      type="text"
+                      inputMode="numeric"
+                      value={item.quantity === 0 ? "" : String(item.quantity)}
                       onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        updateTempItem(index, "quantity", isNaN(val) || val < 0 ? 0 : val);
+                        const raw = e.target.value.replace(/\D/g, "");
+                        updateTempItem(index, "quantity", raw === "" ? 0 : parseInt(raw, 10));
                       }}
-                      min={0}
-                      className="font-serif font-bold text-2xl w-14 text-center text-natural-green-dark bg-transparent outline-none border-b border-natural-border focus:border-natural-green transition-colors"
+                      placeholder="0"
+                      className="font-serif font-bold text-2xl w-14 text-center text-natural-green-dark bg-transparent outline-none border-b border-natural-border focus:border-natural-green transition-colors placeholder:text-natural-text-light/40"
                     />
                     <button
                       onClick={() => updateTempQty(index, 1)}
